@@ -805,7 +805,7 @@ export class NameInsightsService {
     targetGender: TrendGender,
   ): Promise<NameSuggestion[]> {
     const gender = targetGender === 'all' ? 'girl' : targetGender;
-    
+
     const generatedNames = await this.nameGeneratorApi.generateNamesByPattern(
       fatherName,
       motherName,

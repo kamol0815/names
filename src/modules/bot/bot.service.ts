@@ -201,10 +201,20 @@ export class BotService {
     const action = parts[0];
     switch (action) {
       case 'personal':
+        // Check premium access
+        if (!(await this.ensurePaidAccess(ctx))) {
+          await ctx.answerCallbackQuery('Premium obuna kerak! 💳');
+          return;
+        }
         await this.startPersonalizationFlow(ctx);
         await ctx.answerCallbackQuery();
         break;
       case 'trends':
+        // Check premium access
+        if (!(await this.ensurePaidAccess(ctx))) {
+          await ctx.answerCallbackQuery('Premium obuna kerak! 💳');
+          return;
+        }
         await this.showTrendMenu(ctx);
         await ctx.answerCallbackQuery();
         break;
@@ -293,6 +303,12 @@ export class BotService {
   }
 
   private async handleTrendCallbacks(ctx: BotContext, parts: string[]): Promise<void> {
+    // Check premium access for trends
+    if (!(await this.ensurePaidAccess(ctx))) {
+      await ctx.answerCallbackQuery('Premium obuna kerak! 💳');
+      return;
+    }
+
     const action = parts[0];
     if (action === 'overview') {
       const period = (parts[1] as TrendPeriod) ?? 'monthly';
@@ -319,9 +335,17 @@ export class BotService {
         await this.promptForName(ctx);
         return;
       case '🎯 Shaxsiy Tavsiya':
+        // Check premium access
+        if (!(await this.ensurePaidAccess(ctx))) {
+          return;
+        }
         await this.startPersonalizationFlow(ctx);
         return;
       case '📊 Trendlar':
+        // Check premium access
+        if (!(await this.ensurePaidAccess(ctx))) {
+          return;
+        }
         await this.showTrendMenu(ctx);
         return;
       case '⭐ Sevimlilar':
@@ -593,7 +617,7 @@ export class BotService {
       .row()
       .text('🏠 Menyu', 'main:menu');
 
-    const message = 
+    const message =
       "✨ <b>Farzandingizga ism tanlashda ikkilanyapsizmi?</b>\n\n" +
       "🎯 Biz sizga yordam beramiz! Shaxsiy tavsiya generatorimiz:\n\n" +
       "🧬 Ota-ona ismlaridan ilhom oladi\n" +
@@ -689,21 +713,21 @@ export class BotService {
     // 🚀 NEW: API-POWERED GENERATION
     // If parent names provided, use advanced API generation
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    
+
     let suggestions: any[] = [];
     let personaInfo = { code: 'default', label: 'Shaxsiy Profil', summary: 'API orqali yaratilgan' };
 
     if (parentNames && parentNames.length >= 2) {
       // Use API-based generation
       await ctx.replyWithChatAction('typing');
-      
+
       try {
         suggestions = await this.insightsService.buildApiGeneratedRecommendations(
           parentNames[0],
           parentNames[1],
           targetGender,
         );
-        
+
         personaInfo = {
           code: 'api_generated',
           label: '🧬 API Generatsiya',
