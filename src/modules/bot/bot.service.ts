@@ -100,7 +100,7 @@ export class BotService {
       `Assalomu alaykum, <b>${firstName}</b>! 👋\n\n` +
       `🌟 <b>Botimiz imkoniyatlari:</b>\n\n` +
       `🔍 <b>Ism Ma'nosi</b> - Istalgan ismning ma'nosi\n` +
-      `🎯 <b>Shaxsiy Tavsiya</b> - Sizga mos ismlar\n` +
+      `🎯 <b>Shaxsiy Tavsiya</b> - Farzandingizga ism qo'yishga ikkilanyapsizmi?\n` +
       `📊 <b>Trendlar</b> - Eng mashhur ismlar\n` +
       `⭐ <b>Sevimlilar</b> - Yoqqan ismlarni saqlash\n\n` +
       (hasAccess
