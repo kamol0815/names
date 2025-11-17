@@ -98,6 +98,11 @@ export class BotService {
       `   👑 ISMLAR MANOSI    \n` +
       `╚══════════════════════╝\n\n` +
       `Assalomu alaykum, <b>${firstName}</b>! 👋\n\n` +
+      `✍️ <b>Ma'nosini bilmoqchi bo'lgan ismni kiriting</b>\n\n` +
+      `📖 <i>Misol:</i> <code>Muhammad</code>\n` +
+      `<b>Muhammad </b> (Arabcha) - Maqtovga sazovor. ` +
+      `(Arabcha) - Maqtovga, olqishlarga sazovor. Payg‘ambarimiz Muhammad sollallohu alayhi vasallamning (Muhammad ibn Abdulloh, 570 yoki 571 Makka - 632, Madina) muborak ismlari..\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
       `🌟 <b>Botimiz imkoniyatlari:</b>\n\n` +
       `🔍 <b>Ism Ma'nosi</b> - Istalgan ismning ma'nosi\n` +
       `🎯 <b>Shaxsiy Tavsiya</b> - Farzandingizga ism qo'yishga ikkilanyapsizmi?\n` +
@@ -105,10 +110,8 @@ export class BotService {
       `⭐ <b>Sevimlilar</b> - Yoqqan ismlarni saqlash\n\n` +
       (hasAccess
         ? `✅ <b>Status:</b> VIP foydalanuvchi\n♾️ Barcha imkoniyatlar ochiq!\n\n`
-        : `💡 <b>Status:</b> Oddiy foydalanuvchi\n💳 Bir martalik to'lov - 5,555 so'm\n♾️ Umrbod premium!\n\n`) +
-      `📱 <b>Qanday ishlatish:</b>\n` +
-      `Pastdagi tugmalardan birini bosing yoki\n` +
-      `ismni to'g'ridan-to'g'ri yozing! ✍️`;
+        : `💡 <b>Status:</b> Oddiy foydalanuvchi\n💳 Bir martalik to'lov - 1,000 so'm\n♾️ Umrbod premium!\n\n`) +
+      `📱 Pastdagi tugmalardan birini bosing yoki ismni yozing! 🚀`;
 
     // 🎹 Professional Reply Keyboard
     const keyboard = new Keyboard()
@@ -420,7 +423,7 @@ export class BotService {
     message += 'Bu yerda siz ismlarning ma\'nosi, trendlari va shaxsiy tavsiyalarni topasiz.\n\n';
     message += hasAccess
       ? '✅ Premium foydalanuvchisiz — barcha bo\'limlar ochiq.\n\n'
-      : "💳 Bir martalik to'lov qiling va umrbod premiumga ega bo'ling (5 555 so'm).\n\n";
+      : "💳 Bir martalik to'lov qiling va umrbod premiumga ega bo'ling (1 000 so'm).\n\n";
     message += "Quyidagi bo'limlardan birini tanlang yoki ismni yozing:";
 
     if (initial) {
@@ -518,7 +521,7 @@ export class BotService {
 
     await ctx.reply(
       "🔒 Ushbu bo'limdan foydalanish uchun premium talab qilinadi.\n\n" +
-      "💵 Narx: 5 555 so'm\n" +
+      "💵 Narx: 1 000 so'm\n" +
       '♾️ Umrbod kirish.\n\n' +
       "To'lovni amalga oshirib, barcha imkoniyatlarni oching.",
       { reply_markup: keyboard },
@@ -995,7 +998,7 @@ export class BotService {
 
     await this.safeEditOrReply(
       ctx,
-      "💰 Premium: 5 555 so'm\n♾️ Muddati: Umrbod\n\nQuyidagi to'lov usulini tanlang:",
+      "💰 Premium: 1 000 so'm\n♾️ Muddati: Umrbod\n\nQuyidagi to'lov usulini tanlang:",
       keyboard,
     );
   }

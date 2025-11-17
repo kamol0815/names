@@ -15,7 +15,7 @@ export async function seedBasicPlan(
       const basicPlan = planRepository.create({
         name: 'Basic',
         selectedName: 'basic',
-        price: 5555,
+        price: 1000, // Test uchun 1000 so'm
         duration: 36500, // 100 years (lifetime)
       });
       await planRepository.save(basicPlan);
