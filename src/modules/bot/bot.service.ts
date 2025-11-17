@@ -449,7 +449,7 @@ export class BotService {
   }
 
   private async processNameMeaning(ctx: BotContext, name: string): Promise<void> {
-    const hasAccess = await this.ensurePaidAccess(ctx);
+    const hasAccess = await this.ensurePaidAccess(ctx, { requestedName: name });
     if (!hasAccess) {
       return;
     }
@@ -503,7 +503,10 @@ export class BotService {
     await ctx.answerCallbackQuery();
   }
 
-  private async ensurePaidAccess(ctx: BotContext): Promise<boolean> {
+  private async ensurePaidAccess(
+    ctx: BotContext,
+    options?: { requestedName?: string },
+  ): Promise<boolean> {
     const telegramId = ctx.from?.id;
     if (!telegramId) {
       await ctx.reply('Foydalanuvchi aniqlanmadi.');
@@ -519,13 +522,25 @@ export class BotService {
       .text("💳 To'lov qilish", 'onetime_payment')
       .text('🏠 Menyu', 'main');
 
-    await ctx.reply(
-      "🔒 Ushbu bo'limdan foydalanish uchun premium talab qilinadi.\n\n" +
-      "💵 Narx: 1 000 so'm\n" +
-      '♾️ Umrbod kirish.\n\n' +
-      "To'lovni amalga oshirib, barcha imkoniyatlarni oching.",
-      { reply_markup: keyboard },
-    );
+    const normalizedName = options?.requestedName?.trim();
+    const displayName = normalizedName
+      ? normalizedName
+          .split(/\s+/)
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+          .join(' ')
+      : undefined;
+
+    const introMessage = displayName
+      ? `🧠 <b>${displayName}</b> ismini bilish uchun premium sotib oling.\n\n`
+      : "🔒 Ushbu bo'limdan foydalanish uchun premium talab qilinadi.\n\n";
+
+    const message =
+      introMessage +
+      "💳 Bir martalik to'lov qiling va umrbod obunaga ega bo'ling.\n" +
+      "💵 Narx: 1 000 so'm\n\n" +
+      "To'lovni amalga oshirib, barcha imkoniyatlarni faollashtiring.";
+
+    await ctx.reply(message, { reply_markup: keyboard, parse_mode: 'HTML' });
     return false;
   }
 
