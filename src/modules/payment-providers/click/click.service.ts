@@ -112,24 +112,20 @@ export class ClickService {
     const merchantTransId = clickReqBody.merchant_trans_id;
     const context = parseMerchantTransactionId(merchantTransId);
 
-    // Click integration: merchant_trans_id formatida userId.planId keladi
-    // param2 yoki additional_param3 orqali planId ham kelishi mumkin (backup)
-    let userId = context.userId;
+    // Click integration: transaction_param = userId, additional_param3 = planId
+    let userId = context.userId || merchantTransId; // merchant_trans_id userId o'zi
     let planId = context.planId;
-    
-    // Agar context'dan topilmasa, param2 yoki merchant_trans_id'ning o'zidan olish
-    if (!userId) {
-      userId = merchantTransId;
-    }
-    
-    if (!planId && clickReqBody.param2) {
-      planId = clickReqBody.param2;
-    }
-    
+
+    // additional_param3 orqali planId olish
     if (!planId && clickReqBody.additional_param3) {
       planId = clickReqBody.additional_param3;
     }
-    
+
+    // param2 orqali ham planId kelishi mumkin (backup)
+    if (!planId && clickReqBody.param2) {
+      planId = clickReqBody.param2;
+    }
+
     const merId = merchantTransId;
     const amount = clickReqBody.amount;
 
@@ -140,9 +136,7 @@ export class ClickService {
       param2: clickReqBody.param2,
       additional_param3: clickReqBody.additional_param3,
       context
-    });
-
-    if (!userId) {
+    }); if (!userId) {
       logger.error('Click prepare received without userId', {
         merchant_trans_id: merchantTransId,
         context,
@@ -282,24 +276,20 @@ export class ClickService {
     const merchantTransId = clickReqBody.merchant_trans_id;
     const context = parseMerchantTransactionId(merchantTransId);
 
-    // Click integration: merchant_trans_id formatida userId.planId keladi
-    // param2 yoki additional_param3 orqali planId ham kelishi mumkin (backup)
-    let userId = context.userId;
+    // Click integration: transaction_param = userId, additional_param3 = planId
+    let userId = context.userId || merchantTransId; // merchant_trans_id userId o'zi
     let planId = context.planId;
-    
-    // Agar context'dan topilmasa, param2 yoki merchant_trans_id'ning o'zidan olish
-    if (!userId) {
-      userId = merchantTransId;
-    }
-    
-    if (!planId && clickReqBody.param2) {
-      planId = clickReqBody.param2;
-    }
-    
+
+    // additional_param3 orqali planId olish
     if (!planId && clickReqBody.additional_param3) {
       planId = clickReqBody.additional_param3;
     }
-    
+
+    // param2 orqali ham planId kelishi mumkin (backup)
+    if (!planId && clickReqBody.param2) {
+      planId = clickReqBody.param2;
+    }
+
     const merId = merchantTransId;
     const prepareId = clickReqBody.merchant_prepare_id;
     const transId = clickReqBody.click_trans_id + '';
@@ -313,9 +303,7 @@ export class ClickService {
       param2: clickReqBody.param2,
       additional_param3: clickReqBody.additional_param3,
       context
-    });
-
-    if (!userId) {
+    }); if (!userId) {
       logger.error('Click complete received without userId', {
         merchant_trans_id: merchantTransId,
         context,
