@@ -28,13 +28,24 @@ export class UserFavoritesService {
   ) { }
 
   async toggleFavorite(userId: string, slug: string): Promise<'added' | 'removed'> {
-    const record = this.insightsService.findRecordByName(slug);
+    // Avval bazadan qidirish
+    let record = this.insightsService.findRecordByName(slug);
+
+    // Agar bazada yo'q bo'lsa, API dan so'rash
     if (!record) {
-      throw new Error('Ism topilmadi');
+      const nameFromSlug = slug.charAt(0).toUpperCase() + slug.slice(1);
+      const { record: apiRecord } = await this.insightsService.getRichNameMeaning(nameFromSlug);
+      record = apiRecord;
     }
 
+    // Hali ham topilmasa, minimal ism yaratish
+    const finalName = record?.name || (slug.charAt(0).toUpperCase() + slug.slice(1));
+    const finalGender = record?.gender || 'boy';
+    const finalOrigin = record?.origin || 'Unknown';
+    const finalMeaning = record?.meaning || "Ma'lumot topilmadi";
+
     const existing = await this.favoritesRepository.findOne({
-      where: { userId, slug: record.slug },
+      where: { userId, slug: slug },
     });
 
     if (existing) {
@@ -42,26 +53,16 @@ export class UserFavoritesService {
       return 'removed';
     }
 
-    const suggestion: NameSuggestion = {
-      name: record.name,
-      gender: record.gender,
-      slug: record.slug,
-      origin: record.origin,
-      meaning: record.meaning,
-      focusValues: record.focusValues,
-      trendIndex: record.trendIndex.monthly,
-    };
-
     const entity = this.favoritesRepository.create({
       userId,
-      slug: suggestion.slug,
-      name: suggestion.name,
-      gender: suggestion.gender,
-      origin: suggestion.origin,
-      meaning: suggestion.meaning,
+      slug: slug,
+      name: finalName,
+      gender: finalGender,
+      origin: finalOrigin,
+      meaning: finalMeaning,
       metadata: {
-        focusValues: suggestion.focusValues,
-        trendIndex: suggestion.trendIndex,
+        focusValues: record?.focusValues || [],
+        trendIndex: record?.trendIndex?.monthly || 0,
       },
     });
 

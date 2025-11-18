@@ -525,7 +525,7 @@ export class BotService {
     // Agar ma'lumot topilmasa, hech narsa ko'rsatmaslik
     if (!meaning && !record) {
       await ctx.answerCallbackQuery('Ma\'lumot yuklanmoqda...');
-      
+
       // Ismni to'g'ridan-to'g'ri qidirish (slug dan ism olish)
       const nameFromSlug = slug.charAt(0).toUpperCase() + slug.slice(1);
       await this.processNameMeaning(ctx, nameFromSlug);
