@@ -530,13 +530,14 @@ export class BotService {
       return;
     }
 
-    // Ma'lumot bor - YANGI XABAR yuborish (eski menyuni saqlab qolish)
+    // Ma'lumot bor - har doim bir xil format
     const displayName = record?.name || (slug.charAt(0).toUpperCase() + slug.slice(1));
-    const message = this.insightsService.formatRichMeaning(
+    let message = this.insightsService.formatRichMeaning(
       displayName,
       meaning,
       record
     );
+    message += '\n\n🔁 Yana boshqa ismni sinab ko\'ring.';
 
     await ctx.reply(message, {
       parse_mode: 'HTML',
