@@ -216,10 +216,13 @@ export class ClickOnetimeService {
       }
 
       // Summani tekshirish - Click da integer bo'lishi kerak
-      if (parseInt(`${amount}`) !== parseInt(`${plan.price}`)) {
+      const normalizedClickAmount = this.normalizeClickAmount(amount);
+      const normalizedPlanAmount = this.normalizeClickAmount(plan.price);
+      if (normalizedClickAmount !== normalizedPlanAmount) {
         this.logger.warn('Amount mismatch in Click onetime', {
-          clickAmount: parseInt(`${amount}`),
-          planPrice: parseInt(`${plan.price}`),
+          clickAmountRaw: amount,
+          clickAmount: normalizedClickAmount,
+          planPrice: normalizedPlanAmount,
           planPriceOriginal: plan.price,
         });
         return {

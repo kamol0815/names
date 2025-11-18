@@ -8,7 +8,7 @@ export type ClickRedirectParams = {
   userId: string;
 };
 const CLICK_URL = `https://my.click.uz`;
-const BOT_URL = 'https://t.me/gbclilBot';
+const BOT_URL = 'https://t.me/n17kamolBot';
 
 function buildMerchantTransactionId(params: ClickRedirectParams): string {
   return `${params.userId}.${params.planId}`;
@@ -24,7 +24,10 @@ export function buildClickProviderUrl(params: ClickRedirectParams): string {
 
   // amount har doim integer bo'lishi kerak
   const intAmount = Math.floor(Number(params.amount));
-  return `${CLICK_URL}/services/pay?service_id=${serviceId}&merchant_id=${merchantId}&merchant_user_id=${merchantUserId}&amount=${intAmount}&transaction_param=${encodeURIComponent(merchantTransId)}&return_url=${BOT_URL}`;
+  const encodedPlanId = encodeURIComponent(params.planId);
+  return `${CLICK_URL}/services/pay?service_id=${serviceId}&merchant_id=${merchantId}&merchant_user_id=${merchantUserId}&amount=${intAmount}&transaction_param=${encodeURIComponent(
+    merchantTransId,
+  )}&additional_param3=${encodedPlanId}&return_url=${BOT_URL}`;
 }
 
 export function getClickRedirectLink(params: ClickRedirectParams) {
