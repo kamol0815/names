@@ -124,12 +124,10 @@ export class BotService {
       `━━━━━━━━━━━━━━━━━━━━\n\n` +
       `🌟 <b>Botimiz imkoniyatlari:</b>\n\n` +
       `🔍 <b>Ism Ma'nosi</b> - Istalgan ismning ma'nosi\n` +
-      `🎯 <b>Shaxsiy Tavsiya</b> - Farzandingizga ism qo'yishga ikkilanyapsizmi?\n` +
-      `📊 <b>Trendlar</b> - Eng mashhur ismlar\n` +
-      `⭐ <b>Sevimlilar</b> - Yoqqan ismlarni saqlash\n\n` +
+      `🎯 <b>Shaxsiy Tavsiya</b> - Farzandingizga ism qo'yishga ikkilanyapsizmi?\n\n` +
       (hasAccess
         ? `✅ <b>Status:</b> VIP foydalanuvchi\n♾️ Barcha imkoniyatlar ochiq!\n\n`
-        : `💡 <b>Status:</b> Oddiy foydalanuvchi\n💳 Bir martalik to'lov - 1,000 so'm\n♾️ Umrbod premium!\n\n`) +
+        : `💳 Bir martalik to'lov - 1,000 so'm\n🌟 Bir marta to'lov qiling va 10 yillik obunaga ega bo'ling.\n\n`) +
       `📱 Pastdagi tugmalardan birini bosing yoki ismni yozing! `;
 
     // 🎹 Professional Reply Keyboard
