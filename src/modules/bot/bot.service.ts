@@ -522,19 +522,20 @@ export class BotService {
 
     const { record, meaning, error } = await this.insightsService.getRichNameMeaning(slug);
 
-    if (!meaning && error) {
-      await ctx.answerCallbackQuery('Ma\'lumot topilmadi');
+    // Agar ma'lumot topilmasa, hech narsa ko'rsatmaslik
+    if (!meaning && !record) {
+      await ctx.answerCallbackQuery('Ma\'lumot yuklanmoqda...');
+      
+      // Ismni to'g'ridan-to'g'ri qidirish (slug dan ism olish)
+      const nameFromSlug = slug.charAt(0).toUpperCase() + slug.slice(1);
+      await this.processNameMeaning(ctx, nameFromSlug);
       return;
     }
 
-    if (!record) {
-      await ctx.answerCallbackQuery('Ma\'lumot topilmadi');
-      return;
-    }
-
-    // To'liq formatlangan ma'noni ko'rsatish
+    // Ma'lumot bor - ko'rsatish
+    const displayName = record?.name || (slug.charAt(0).toUpperCase() + slug.slice(1));
     const message = this.insightsService.formatRichMeaning(
-      record.name,
+      displayName,
       meaning,
       record
     );
@@ -542,7 +543,7 @@ export class BotService {
     await this.safeEditOrReply(
       ctx,
       message,
-      this.buildNameDetailKeyboard(record.slug)
+      this.buildNameDetailKeyboard(slug)
     );
 
     await ctx.answerCallbackQuery();
