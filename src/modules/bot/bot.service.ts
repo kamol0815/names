@@ -1068,7 +1068,7 @@ export class BotService {
       return;
     }
 
-    const amount = Number(plan.price);
+    const amount = Math.floor(Number(plan.price));
 
     // Generate secure payment links with tokens
     const paymeLink = generatePaymeLink({
@@ -1118,7 +1118,7 @@ export class BotService {
       return;
     }
 
-    const amount = Number(plan.price);
+    const amount = Math.floor(Number(plan.price));
     const providerTitle = provider === 'click' ? 'Click' : 'Payme';
 
     let paymentLink: string;
@@ -1215,11 +1215,6 @@ export class BotService {
       },
     });
 
-    // Oxirgi so'ralgan ismni sessiondan olib, ma'nosini chiqarib berish
-    // (session/requestedName ni saqlash va ishlatish)
-    // Bu kod faqat handleSubscriptionSuccess ichida, user telegramId bo'yicha sessionni olish kerak
-    // Agar session/requestedName bo'lsa, uni yuborish
-    // Oxirgi requested name ni chiqarib berish
     try {
       const requestedName = this.requestedNames.get(user.telegramId);
       if (requestedName) {
