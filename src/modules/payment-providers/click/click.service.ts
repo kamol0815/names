@@ -469,9 +469,8 @@ export class ClickService {
           `🎉 <b>Tabriklaymiz!</b>\n\n` +
             `✅ To'lov muvaffaqiyatli amalga oshirildi!\n` +
             `💰 Summa: ${plan.price} so'm\n\n` +
-            `🌟 <b>Endi siz VIP foydalanuvchisiz!</b>\n` +
-            `♾️ Barcha ismlar manosi umrbod ochiq!\n\n` +
-            `Botdan bemalol foydalanishingiz mumkin! 🚀`,
+            `🌟 Siz 10 yillik obunaga ega bo'ldingiz.\n\n` +
+            `✍️ Istalgan ismni yozing va darhol ma'nosini bilib oling.`,
           { parse_mode: 'HTML' },
         );
         await this.botService.sendPendingNameMeaning(user.telegramId);

@@ -380,7 +380,7 @@ export class NameInsightsService {
       : "\n📘 Ma'lumot hozircha topilmadi.\n";
 
     if (!record) {
-      return `${headline}\n${meaningBlock}\n🔁 Yana boshqa ismni sinab ko'ring.`;
+      return `${headline}\n${meaningBlock}`;
     }
 
     const origin = `🌍 <b>Kelib chiqishi:</b> ${record.origin}`;

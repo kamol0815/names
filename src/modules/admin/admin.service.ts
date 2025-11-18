@@ -143,11 +143,10 @@ export class AdminService {
             const bot = this.botService.getBot();
             await bot.api.sendMessage(
                 user.telegramId,
-                `🎁 <b>Ajoyib yangilik!</b>\n\n` +
-                `✅ Sizga admin tomonidan <b>UMRBOD obuna</b> berildi!\n\n` +
-                `🌟 <b>Endi siz VIP foydalanuvchisiz!</b>\n` +
-                `♾️ Barcha ismlar manosi umrbod ochiq!\n\n` +
-                `Botdan bemalol foydalanishingiz mumkin! 🚀`,
+                `🎉 <b>Tabriklaymiz!</b>\n\n` +
+                `✅ To'lov muvaffaqiyatli amalga oshirildi.\n` +
+                `🌟 Siz 10 yillik obunaga ega bo'ldingiz.\n\n` +
+                `✍️ Istalgan ismni yozing va darhol ma'nosini bilib oling.`,
                 { parse_mode: 'HTML' },
             );
         } catch (error) {

@@ -1234,8 +1234,7 @@ export class BotService {
         return;
       }
 
-      let message = this.insightsService.formatRichMeaning(record?.name ?? requestedName, meaning, record);
-      message += '\n\n🔁 Yana boshqa ismni sinab ko\'ring.';
+      const message = this.insightsService.formatRichMeaning(record?.name ?? requestedName, meaning, record);
       await this.bot.api.sendMessage(telegramId, message, {
         parse_mode: 'HTML',
         reply_markup: {
