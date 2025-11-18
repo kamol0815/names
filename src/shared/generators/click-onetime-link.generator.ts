@@ -1,35 +1,29 @@
-import { config } from '../config';
+import { getClickRedirectLink } from './click-redirect-link.generator';
 
 /**
- * Click bir martalik to'lov linkini yaratish
- *
- * @param userId - Foydalanuvchi ID
- * @param planId - Reja ID
- * @param amount - To'lov summasi (tiyin)
- * @returns To'lov linki
+ * Click bir martalik to'lov linkini token orqali yaratadi.
+ * Masked URL mavjud bo'lmasa, to'g'ridan-to'g'ri Click havolasini qaytaradi.
  */
 export function generateClickOnetimeLink(
   userId: string,
   planId: string,
   amount: number,
 ): string {
-  const CLICK_SERVICE_ID = config.CLICK_SERVICE_ID;
-  const CLICK_MERCHANT_ID = config.CLICK_MERCHANT_ID;
-  const CLICK_MERCHANT_USER_ID = config.CLICK_MERCHANT_USER_ID;
-  const RETURN_URL = 'https://t.me/gbclilBot';
+  const normalizedAmount = normalizeAmount(amount);
 
-  // Click to'lov linki
-  // transaction_param - unique ID (userId ishlatamiz)
-  // additional_param3 - planId
-  const paymentUrl = new URL('https://my.click.uz/services/pay');
+  return getClickRedirectLink({
+    amount: normalizedAmount,
+    planId,
+    userId,
+  });
+}
 
-  paymentUrl.searchParams.set('service_id', CLICK_SERVICE_ID);
-  paymentUrl.searchParams.set('merchant_id', CLICK_MERCHANT_ID);
-  paymentUrl.searchParams.set('merchant_user_id', CLICK_MERCHANT_USER_ID);
-  paymentUrl.searchParams.set('amount', Math.floor(Number(amount)).toString()); // Har doim integer qilib yuborish
-  paymentUrl.searchParams.set('transaction_param', userId); // userId (qisqa)
-  paymentUrl.searchParams.set('additional_param3', planId); // planId
-  paymentUrl.searchParams.set('return_url', RETURN_URL);
+function normalizeAmount(amount: number): number {
+  const parsed = Math.floor(Number(amount));
 
-  return paymentUrl.toString();
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    throw new Error('Invalid Click amount');
+  }
+
+  return parsed;
 }

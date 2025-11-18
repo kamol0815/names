@@ -14,6 +14,7 @@ import {
   SubscriptionStatus,
   PaymentType,
 } from 'src/shared/database/entities';
+import { generateClickOnetimeLink } from 'src/shared/generators/click-onetime-link.generator';
 import { BotService } from '../../bot/bot.service';
 
 /**
@@ -30,7 +31,6 @@ export class ClickOnetimeService {
   private readonly clickMerchantId: string;
   private readonly clickSecretKey: string;
   private readonly clickMerchantUserId: string;
-  private readonly returnUrl: string;
 
   constructor(
     @InjectRepository(UserEntity)
@@ -52,11 +52,6 @@ export class ClickOnetimeService {
     this.clickMerchantUserId = this.configService.get<string>(
       'CLICK_MERCHANT_USER_ID',
     );
-    this.returnUrl = this.configService.get<string>(
-      'BOT_URL',
-      'https://t.me/ismlar_manosi_uzbot',
-    );
-
     if (!this.clickServiceId || !this.clickMerchantId || !this.clickSecretKey) {
       this.logger.error('❌ Click credentials not properly configured');
       throw new Error('Click payment provider not properly configured');
@@ -77,11 +72,15 @@ export class ClickOnetimeService {
       throw new BadRequestException('Missing required parameters');
     }
 
-    const merchantTransId = `${userId}.${planId}`;
-    const paymentLink = `https://my.click.uz/services/pay?service_id=${this.clickServiceId}&merchant_id=${this.clickMerchantId}&amount=${amount}&transaction_param=${userId}&additional_param3=${planId}&return_url=${encodeURIComponent(this.returnUrl)}`;
+    const normalizedAmount = this.normalizeClickAmount(amount);
+    const paymentLink = generateClickOnetimeLink(
+      userId,
+      planId,
+      normalizedAmount,
+    );
 
     this.logger.log(
-      `💳 Payment link generated for user ${userId}, amount: ${amount} UZS`,
+      `💳 Payment link generated for user ${userId}, amount: ${normalizedAmount} UZS (raw: ${amount})`,
     );
     return paymentLink;
   }
@@ -496,5 +495,15 @@ export class ClickOnetimeService {
     );
 
     return generatedSignString === sign_string;
+  }
+
+  private normalizeClickAmount(amount: string | number): number {
+    const parsed = Math.floor(Number(amount));
+
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      throw new BadRequestException('Invalid payment amount');
+    }
+
+    return parsed;
   }
 }
