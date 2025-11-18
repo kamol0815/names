@@ -1199,8 +1199,9 @@ export class BotService {
     const message =
       '🎉 <b>Tabriklaymiz!</b>\n\n' +
       "✅ To'lov muvaffaqiyatli amalga oshirildi.\n\n" +
-      '♾️ Siz butun umrlik obunaga ega bo\'ldingiz!\n\n' +
-      '🙏 Rahmat!';
+      "♾️ Siz butun umrlik obunaga ega bo'ldingiz!\n\n" +
+      "🙏 Rahmat!\n\n" +
+      "Istalgan ismni yozib, botdan foydalanib ismlar ma'nosini bilib olishingiz mumkin.";
 
     await this.bot.api.sendMessage(user.telegramId, message, {
       parse_mode: 'HTML',

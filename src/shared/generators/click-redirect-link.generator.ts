@@ -1,7 +1,4 @@
 import { config } from '../config';
-import { buildMaskedPaymentLink } from '../utils/payment-link.util';
-import { createSignedToken } from '../utils/signed-token.util';
-
 export type ClickRedirectParams = {
   amount: number;
   planId: string;
@@ -31,11 +28,5 @@ export function buildClickProviderUrl(params: ClickRedirectParams): string {
 }
 
 export function getClickRedirectLink(params: ClickRedirectParams) {
-  const token = createSignedToken(params, config.PAYMENT_LINK_SECRET);
-  const redirectUrl = buildMaskedPaymentLink(`click?token=${token}`);
-  if (!redirectUrl) {
-    return buildClickProviderUrl(params);
-  }
-
-  return redirectUrl;
+  return buildClickProviderUrl(params);
 }
