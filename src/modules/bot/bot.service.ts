@@ -599,11 +599,8 @@ export class BotService {
       userId: user.id,
     });
 
-    const clickLink = getClickRedirectLink({
-      amount,
-      planId: plan.id,
-      userId: user.id,
-    });
+    // Statik Click havolasi
+    const clickLink = 'https://my.click.uz/services/pay?service_id=87085&merchant_id=7269&merchant_user_id=69350&amount=1000&transaction_param=7cf19c94-94dd-4391-8ffa-8ec14cd1caa4&additional_param3=bb7cac0e-ed39-44bd-8144-c63a39bc4d1d&return_url=https%3A%2F%2Ft.me%2Fn17kamolBot';
 
     const keyboard = new InlineKeyboard()
       .url('💳 Payme', paymeLink)
@@ -1121,8 +1118,8 @@ export class BotService {
     let paymentLink: string;
 
     if (provider === 'click') {
-      // Click onetime to'lov uchun to'g'ri generator
-      paymentLink = generateClickOnetimeLink(user.id, plan.id, amount);
+      // Statik Click havolasi
+      paymentLink = 'https://my.click.uz/services/pay?service_id=87085&merchant_id=7269&merchant_user_id=69350&amount=1000&transaction_param=7cf19c94-94dd-4391-8ffa-8ec14cd1caa4&additional_param3=bb7cac0e-ed39-44bd-8144-c63a39bc4d1d&return_url=https%3A%2F%2Ft.me%2Fn17kamolBot';
     } else {
       // Payme
       paymentLink = generatePaymeLink({
