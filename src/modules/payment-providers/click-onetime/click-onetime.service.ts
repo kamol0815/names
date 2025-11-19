@@ -14,10 +14,7 @@ import {
   SubscriptionStatus,
   PaymentType,
 } from 'src/shared/database/entities';
-import {
-  decodeMerchantTransaction,
-  generateClickOnetimeLink,
-} from 'src/shared/generators/click-onetime-link.generator';
+import { generateClickOnetimeLink } from 'src/shared/generators/click-onetime-link.generator';
 import { BotService } from '../../bot/bot.service';
 
 /**
@@ -185,12 +182,10 @@ export class ClickOnetimeService {
         `Preparing transaction ${JSON.stringify({ clickReqBody })}`,
       );
 
-      const decoded = decodeMerchantTransaction(
-        clickReqBody.transaction_param || merchant_trans_id,
-      );
-      const userId = decoded.userId || merchant_trans_id;
+      const userId =
+        clickReqBody.transaction_param || merchant_trans_id;
       const planId =
-        decoded.planId || clickReqBody.additional_param3 || param2;
+        clickReqBody.additional_param3 || param2;
 
       if (!planId) {
         return {
