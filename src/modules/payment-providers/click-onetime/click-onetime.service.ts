@@ -175,8 +175,14 @@ export class ClickOnetimeService {
         `Preparing transaction ${JSON.stringify({ clickReqBody })}`,
       );
 
-      const userId = merchant_trans_id.split('.')[0] || merchant_trans_id;
+      const userId =
+        clickReqBody.additional_param1 ||
+        clickReqBody.param1 ||
+        merchant_trans_id.split('.')[0] ||
+        merchant_trans_id;
       const planId =
+        clickReqBody.additional_param2 ||
+        clickReqBody.param2 ||
         merchant_trans_id.split('.')[1] ||
         clickReqBody.additional_param3 ||
         param2;

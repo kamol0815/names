@@ -20,17 +20,25 @@ export function generateClickOnetimeLink(
   options?: ClickLinkOptions,
 ): string {
   const normalizedAmount = normalizeAmount(amount);
-  const sanitizedUserId = normalizeParam(userId, 'usr');
-  const sanitizedPlanId = normalizeParam(planId, 'pln');
-  const planCode = normalizeParam(options?.planCode ?? planId, 'plc');
+  const orderId = buildOrderId(userId, planId);
 
   const paymentUrl = new URL('https://my.click.uz/services/pay');
   paymentUrl.searchParams.set('service_id', config.CLICK_SERVICE_ID);
   paymentUrl.searchParams.set('merchant_id', config.CLICK_MERCHANT_ID);
   paymentUrl.searchParams.set('amount', normalizedAmount.toString());
-  paymentUrl.searchParams.set('transaction_param', sanitizedUserId);
-  paymentUrl.searchParams.set('additional_param3', sanitizedPlanId);
-  paymentUrl.searchParams.set('additional_param4', planCode);
+  paymentUrl.searchParams.set('transaction_param', orderId);
+  paymentUrl.searchParams.set('additional_param1', userId);
+  paymentUrl.searchParams.set('additional_param2', planId);
+  paymentUrl.searchParams.set(
+    'additional_param3',
+    options?.planCode ?? planId,
+  );
+  paymentUrl.searchParams.set(
+    'additional_param4',
+    options?.planCode ?? planId,
+  );
+  paymentUrl.searchParams.set('param1', userId);
+  paymentUrl.searchParams.set('param2', planId);
   paymentUrl.searchParams.set('return_url', RETURN_URL);
 
   return paymentUrl.toString();
@@ -45,17 +53,9 @@ function normalizeAmount(amount: number): number {
   return parsed;
 }
 
-function normalizeParam(value: string | undefined, prefix: string): string {
-  const raw = value?.replace(/[^a-zA-Z0-9]/g, '') ?? '';
-  const base = raw || prefix;
-  if (base.length === 24) {
-    return base;
-  }
-
-  if (base.length > 24) {
-    return base.slice(0, 24);
-  }
-
-  const hash = createHash('md5').update(base).digest('hex');
-  return (base + hash).slice(0, 24);
+function buildOrderId(userId: string, planId: string): string {
+  const timestamp = Date.now().toString();
+  const seed = `${userId}.${planId}.${timestamp}.${Math.random()}`;
+  const hash = createHash('md5').update(seed).digest('hex');
+  return hash.slice(0, 24);
 }

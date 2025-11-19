@@ -37,7 +37,6 @@ function parseMerchantTransactionId(value?: string): TransactionContext {
     });
   }
 
-  // Format: userId.planId
   const parts = decoded.split('.');
   const userId = parts[0] || undefined;
   const planId = parts[1] || undefined;
@@ -113,8 +112,15 @@ export class ClickService {
     const context = parseMerchantTransactionId(merchantTransId);
 
     // Click integration: transaction_param = userId, additional_param3 = planId
-    let userId = context.userId || merchantTransId; // merchant_trans_id userId o'zi
-    let planId = context.planId;
+    let userId =
+      clickReqBody.additional_param1 ||
+      clickReqBody.param1 ||
+      context.userId ||
+      merchantTransId;
+    let planId =
+      clickReqBody.additional_param2 ||
+      clickReqBody.param2 ||
+      context.planId;
 
     // additional_param3 orqali planId olish
     if (!planId && clickReqBody.additional_param3) {
