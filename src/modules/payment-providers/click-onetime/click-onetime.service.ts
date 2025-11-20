@@ -183,9 +183,9 @@ export class ClickOnetimeService {
       );
 
       const userId =
-        clickReqBody.transaction_param || merchant_trans_id;
+        clickReqBody.additional_param1 || clickReqBody.transaction_param || merchant_trans_id;
       const planId =
-        clickReqBody.additional_param3 || param2;
+        clickReqBody.additional_param2 || clickReqBody.additional_param3 || param2;
 
       if (!planId) {
         return {

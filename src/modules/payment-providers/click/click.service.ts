@@ -112,9 +112,9 @@ export class ClickService {
     const context = parseMerchantTransactionId(merchantTransId);
 
     let userId =
-      clickReqBody.transaction_param || context.userId || merchantTransId;
+      clickReqBody.additional_param1 || clickReqBody.transaction_param || context.userId || merchantTransId;
     let planId =
-      clickReqBody.additional_param3 || context.planId || clickReqBody.param2;
+      clickReqBody.additional_param2 || clickReqBody.additional_param3 || context.planId || clickReqBody.param2;
 
     // additional_param3 orqali planId olish
     if (!planId && clickReqBody.additional_param3) {

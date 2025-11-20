@@ -20,7 +20,9 @@ export function generateClickOnetimeLink(
 ): string {
   const normalizedAmount = normalizeAmount(amount);
   const planCode = (options?.planCode ?? planId).replace(/\s+/g, '').toLowerCase();
-  const merchantTransId = userId;
+  const merchantTransId = buildShortToken(userId);
+  const userToken = buildShortToken(userId);
+  const planToken = buildShortToken(planId);
 
   const paymentUrl = new URL('https://my.click.uz/services/pay');
   paymentUrl.searchParams.set('service_id', config.CLICK_SERVICE_ID);
@@ -30,6 +32,8 @@ export function generateClickOnetimeLink(
   }
   paymentUrl.searchParams.set('amount', normalizedAmount.toString());
   paymentUrl.searchParams.set('transaction_param', merchantTransId);
+  paymentUrl.searchParams.set('additional_param1', userToken);
+  paymentUrl.searchParams.set('additional_param2', planToken);
   paymentUrl.searchParams.set('additional_param3', planId);
   paymentUrl.searchParams.set('additional_param4', planCode);
   paymentUrl.searchParams.set('return_url', RETURN_URL);
@@ -44,4 +48,13 @@ function normalizeAmount(amount: number): number {
   }
 
   return parsed;
+}
+
+function buildShortToken(value: string): string {
+  return Buffer.from(value)
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/g, '')
+    .slice(0, 24);
 }
