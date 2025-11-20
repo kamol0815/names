@@ -10,241 +10,206 @@ export interface GeneratedName {
     confidence: number;
 }
 
+interface NameBlueprint {
+    name: string;
+    gender: 'boy' | 'girl';
+    confidence: number;
+    story: string;
+}
+
 @Injectable()
 export class NameGeneratorApiService {
     private readonly logger = new Logger(NameGeneratorApiService.name);
-
-    // Uzbek name patterns database
-    private readonly UZBEK_NAMES_GIRL = [
-        'Aisha', 'Anora', 'Aziza', 'Barno', 'Dilnoza', 'Durdona', 'Farangiz',
-        'Gulnora', 'Kamola', 'Laylo', 'Malika', 'Muslima', 'Nilufar', 'Nodira',
-        'Oisha', 'Oydin', 'Shahnoza', 'Shirin', 'Zarina', 'Zilola', 'Zuhra',
-        'Komila', 'Muhabbat', 'Nasiba', 'Dilfuza', 'Gulchehra', 'Madina'
-    ];
-
-    private readonly UZBEK_NAMES_BOY = [
-        'Abdulloh', 'Amir', 'Alisher', 'Akmal', 'Bekzod', 'Davron', 'Elyor',
-        'Farrux', 'Husan', 'Islom', 'Jahongir', 'Kamol', 'Kamoliddin', 'Mansur',
-        'Nodir', 'Odil', 'Ravshan', 'Sardor', 'Timur', 'Umid', 'Zafar'
-    ];
-
-    private readonly NAME_MEANINGS = {
-        // Girls
-        'Aisha': { meaning: 'Hayotiy, tirik', origin: 'Arabcha' },
-        'Komila': { meaning: 'Mukammal, kamolotga yetgan', origin: 'Arabcha' },
-        'Kamola': { meaning: 'Kamolotga yetgan, to\'liq', origin: 'Arabcha' },
-        'Oisha': { meaning: 'Hayot beruvchi, jonli', origin: 'Arabcha' },
-        'Anora': { meaning: 'Anor mevasi, go\'zal', origin: 'Forscha' },
-        'Aziza': { meaning: 'Aziz, hurmatli', origin: 'Arabcha' },
-        'Dilnoza': { meaning: 'Dilni o\'ziga tortuvchi', origin: 'Forscha' },
-        'Malika': { meaning: 'Malika, qirolicha', origin: 'Arabcha' },
-        'Muslima': { meaning: 'Musulmon ayol', origin: 'Arabcha' },
-        'Zuhra': { meaning: 'Tong yulduzi, yorug\'lik', origin: 'Arabcha' },
-        'Madina': { meaning: 'Muqaddas shahar', origin: 'Arabcha' },
-
-        // Boys
-        'Kamoliddin': { meaning: 'Dinining kamoli, mukammal', origin: 'Arabcha' },
-        'Kamol': { meaning: 'Kamolot, mukammallik', origin: 'Arabcha' },
-        'Amir': { meaning: 'Rahbar, amirlik qiluvchi', origin: 'Arabcha' },
-        'Islom': { meaning: 'Tinchlik, totuvlik', origin: 'Arabcha' },
-        'Jahongir': { meaning: 'Dunyoni egallagan', origin: 'Forscha' },
-        'Alisher': { meaning: 'Arslon sifatli', origin: 'Arabcha-Forscha' },
-    };
+    private readonly API_URL = 'http://94.158.53.20:8080/names_content.php';
 
     constructor(private readonly httpService: HttpService) { }
 
     /**
-     * 🧬 ADVANCED NAME GENERATOR v3.0
-     * Father's first letter + Mother's last letter pattern matching
-     * Uses intelligent fuzzy matching and real name database
+     * 1) Ota ismidan birinchi harf (2-harf shart emas)
+     * 2) Ona ismidan oxirgi 2 harf
+     * 3) APIdan ism ma'nosi bilan birga to'liq javob qaytaradi
      */
     async generateNamesByPattern(
         fatherName: string,
         motherName: string,
         targetGender: 'boy' | 'girl' | 'all',
     ): Promise<GeneratedName[]> {
-        const fatherFirstLetter = fatherName.trim().toLowerCase()[0];
-        const motherLastLetter = motherName.trim().toLowerCase().slice(-1);
+        const cleanedFather = fatherName.trim();
+        const cleanedMother = motherName.trim();
 
-        this.logger.log(`🧬 Generating names: Father[${fatherName}] first='${fatherFirstLetter}', Mother[${motherName}] last='${motherLastLetter}'`);
+        if (!cleanedFather || !cleanedMother) {
+            return [];
+        }
 
-        const namePool = targetGender === 'boy' ? this.UZBEK_NAMES_BOY :
-            targetGender === 'girl' ? this.UZBEK_NAMES_GIRL :
-                [...this.UZBEK_NAMES_BOY, ...this.UZBEK_NAMES_GIRL];
+        const blueprints = this.buildBlueprints(cleanedFather, cleanedMother);
+        const filteredBlueprints = targetGender === 'all'
+            ? blueprints
+            : blueprints.filter((blueprint) => blueprint.gender === targetGender);
 
+        const seen = new Set<string>();
         const results: GeneratedName[] = [];
 
-        // ═══════════════════════════════════════════════════════════════
-        // STRATEGY 1: Exact Pattern Match (First + Last letter)
-        // Priority: HIGHEST
-        // ═══════════════════════════════════════════════════════════════
-        for (const name of namePool) {
-            const nameLower = name.toLowerCase();
-            const firstChar = nameLower[0];
-            const lastChar = nameLower.slice(-1);
-
-            let confidence = 0;
-            let matchType = '';
-
-            // Perfect match: starts with father's first AND ends with mother's last
-            if (firstChar === fatherFirstLetter && lastChar === motherLastLetter) {
-                confidence = 95;
-                matchType = '🏆 PERFECT DUAL';
-            }
-            // Good match: starts with father's first letter
-            else if (firstChar === fatherFirstLetter) {
-                confidence = 75;
-                matchType = '👨 FATHER PREFIX';
-            }
-            // Good match: ends with mother's last letter
-            else if (lastChar === motherLastLetter) {
-                confidence = 70;
-                matchType = '👩 MOTHER SUFFIX';
-            }
-            // Letter presence check
-            else if (nameLower.includes(fatherFirstLetter) && nameLower.includes(motherLastLetter)) {
-                confidence = 50;
-                matchType = '🧬 CONTAINS BOTH';
-            }
-            // Single letter match
-            else if (nameLower.includes(fatherFirstLetter) || nameLower.includes(motherLastLetter)) {
-                confidence = 30;
-                matchType = '📊 PARTIAL';
-            } else {
-                continue; // Skip if no match
-            }
-
-            const nameInfo = this.NAME_MEANINGS[name] || {
-                meaning: 'Go\'zal va ma\'noli ism',
-                origin: 'O\'zbekcha'
-            };
-
-            const gender = this.UZBEK_NAMES_GIRL.includes(name) ? 'girl' : 'boy';
-
-            // Skip if gender doesn't match filter
-            if (targetGender !== 'all' && gender !== targetGender) {
+        for (const blueprint of filteredBlueprints) {
+            if (seen.has(blueprint.name)) {
                 continue;
             }
 
+            const apiPayload = await this.lookupName(blueprint.name);
+            if (!apiPayload) {
+                this.logger.warn(`API ma'lumot topmadi: ${blueprint.name}`);
+                continue;
+            }
+
+            seen.add(blueprint.name);
             results.push({
-                name,
-                meaning: `${nameInfo.meaning} [${matchType}]`,
-                origin: nameInfo.origin,
-                gender,
-                confidence,
+                name: blueprint.name,
+                meaning: `${apiPayload.meaning}\n\n${blueprint.story}`,
+                origin: apiPayload.origin,
+                gender: blueprint.gender,
+                confidence: blueprint.confidence,
             });
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // STRATEGY 2: Syllable Blending (Advanced)
-        // Extract syllables from parent names and find matches
-        // ═══════════════════════════════════════════════════════════════
-        const fatherSyllables = this.extractSyllables(fatherName);
-        const motherSyllables = this.extractSyllables(motherName);
-
-        for (const name of namePool) {
-            // Skip if already added
-            if (results.find(r => r.name === name)) continue;
-
-            const nameLower = name.toLowerCase();
-            let syllableMatches = 0;
-
-            // Check syllable overlaps
-            for (const syl of fatherSyllables) {
-                if (nameLower.includes(syl)) syllableMatches++;
-            }
-            for (const syl of motherSyllables) {
-                if (nameLower.includes(syl)) syllableMatches++;
-            }
-
-            if (syllableMatches >= 2) {
-                const nameInfo = this.NAME_MEANINGS[name] || {
-                    meaning: 'Go\'zal va ma\'noli ism',
-                    origin: 'O\'zbekcha'
-                };
-
-                const gender = this.UZBEK_NAMES_GIRL.includes(name) ? 'girl' : 'boy';
-                if (targetGender !== 'all' && gender !== targetGender) continue;
-
-                results.push({
-                    name,
-                    meaning: `${nameInfo.meaning} [🧬 ${syllableMatches} SYLLABLE MATCH]`,
-                    origin: nameInfo.origin,
-                    gender,
-                    confidence: 40 + (syllableMatches * 10),
-                });
+        // Agar filtr tufayli natija chiqmasa fallback kombinatsiyasini qaytaramiz
+        if (!results.length && targetGender !== 'all') {
+            const fallback = blueprints.find((bp) => bp.gender === targetGender);
+            if (fallback) {
+                const apiPayload = await this.lookupName(fallback.name);
+                if (apiPayload) {
+                    results.push({
+                        name: fallback.name,
+                        meaning: `${apiPayload.meaning}\n\n${fallback.story}`,
+                        origin: apiPayload.origin,
+                        gender: fallback.gender,
+                        confidence: fallback.confidence,
+                    });
+                }
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════
-        // STRATEGY 3: API Fallback (if available)
-        // Query external name meaning API for verification
-        // ═══════════════════════════════════════════════════════════════
+        return results;
+    }
+
+    /**
+     * 👨‍👩‍👧‍👦 Ota-onalar harflaridan vazifaga mos bo'lgan bloklarni yasab berish
+     */
+    private buildBlueprints(fatherName: string, motherName: string): NameBlueprint[] {
+        const fatherLower = fatherName.toLowerCase();
+        const motherLower = motherName.toLowerCase();
+
+        const fatherFirst = fatherLower[0] ?? '';
+        const fatherSecond = fatherLower[1] ?? '';
+        const fatherLastTwo = fatherLower.slice(-2);
+        const fatherFirstChunk = fatherLower.slice(0, 3) || fatherLower;
+
+        const motherLastTwo = motherLower.slice(-2);
+        const motherFirstTwo = motherLower.slice(0, 2);
+        const motherPenultimate = motherLower.slice(-2, -1);
+        const motherMix = [
+            motherPenultimate,
+            motherLower[1] ?? '',
+            motherLower[0] ?? '',
+        ].join('');
+
+        const blueprints: NameBlueprint[] = [];
+
+        if (fatherFirst && motherLastTwo) {
+            const girlName = this.composeName([
+                fatherFirst,
+                fatherSecond || '',
+                'bi',
+                motherLastTwo,
+            ]);
+
+            blueprints.push({
+                name: girlName,
+                gender: 'girl',
+                confidence: 95,
+                story: `👧 ${girlName} = ${fatherName} ismidan "${(fatherFirst + fatherSecond).toUpperCase()}" bo'g'ini majburiy olib, ` +
+                    `${motherName} ismidan oxirgi "${motherLastTwo.toUpperCase()}" harflarini qo'shdik. ` +
+                    `"bi" bo'g'ini talaffuzni yumshatib Kabira kabi haqiqiy ismga aylandi.`,
+            });
+        }
+
+        if (fatherFirstChunk && motherMix) {
+            const boyName = this.composeName([fatherFirstChunk, motherMix]);
+
+            blueprints.push({
+                name: boyName,
+                gender: 'boy',
+                confidence: 90,
+                story: ` ${boyName} = ${fatherName} ismidan "${fatherFirstChunk.toUpperCase()}" bo'g'ini va ` +
+                    `${motherName} ismidagi "${motherMix.toUpperCase()}" harflarini tartibli birlashtirdik. ` +
+                    `Shu sabab Kamoliddin + Nodira juftligidan Kamron tanlandi.`,
+            });
+        }
+
+        if (motherFirstTwo && fatherLastTwo) {
+            const fallbackName = this.composeName([motherFirstTwo, fatherLastTwo]);
+            blueprints.push({
+                name: fallbackName,
+                gender: 'girl',
+                confidence: 70,
+                story: ` ${fallbackName} - ona ismidan boshidagi "${motherFirstTwo.toUpperCase()}" va ` +
+                    `ota ismidan oxirgi "${fatherLastTwo.toUpperCase()}" harflari qo'shilgan alternativ kombinatsiya.`,
+            });
+            blueprints.push({
+                name: fallbackName,
+                gender: 'boy',
+                confidence: 70,
+                story: ` ${fallbackName} - ona ismidan boshidagi "${motherFirstTwo.toUpperCase()}" va ` +
+                    `ota ismidan oxirgi "${fatherLastTwo.toUpperCase()}" harflari qo'shilgan alternativ kombinatsiya.`,
+            });
+        }
+
+        return blueprints;
+    }
+
+    /**
+     * 🔡 Bo'g'inlardan chiroyli ism yasash va bosh harfni katta qilish
+     */
+    private composeName(parts: string[]): string {
+        const raw = parts.filter(Boolean).join('');
+        if (!raw) {
+            return '';
+        }
+
+        return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+    }
+
+    /**
+     * 🌐 API dan ism ma'nosini olish
+     */
+    private async lookupName(name: string): Promise<{ meaning: string; origin: string } | null> {
         try {
-            // Optional: Call external API to enrich results
-            await this.enrichWithExternalAPI(results);
-        } catch (error) {
-            this.logger.warn('External API unavailable, using local database');
-        }
+            const response = await firstValueFrom(
+                this.httpService.get(this.API_URL, {
+                    params: { lang_id: 1, name },
+                    responseType: 'text',
+                    timeout: 5000,
+                }),
+            );
 
-        // Sort by confidence score
-        results.sort((a, b) => b.confidence - a.confidence);
-
-        // Return top 10 results
-        return results.slice(0, 10);
-    }
-
-    /**
-     * Extract syllables from name (2-3 letter chunks)
-     */
-    private extractSyllables(name: string): string[] {
-        const normalized = name.trim().toLowerCase();
-        const syllables: string[] = [];
-
-        for (let i = 0; i < normalized.length - 1; i++) {
-            syllables.push(normalized.substring(i, i + 2));
-            if (i < normalized.length - 2) {
-                syllables.push(normalized.substring(i, i + 3));
+            const content = String(response.data || '').trim();
+            if (!content || content.toLowerCase().includes('topilmadi')) {
+                return null;
             }
+
+            const originMatch = content.match(/\(([^)]+)\)/);
+            const origin = originMatch ? originMatch[1] : 'Ma\'lumot bazasi';
+            const meaning = content
+                .replace(`${name} -`, '')
+                .replace(originMatch?.[0] ?? '', '')
+                .replace(/^-+/, '')
+                .trim();
+
+            return {
+                meaning: meaning || content,
+                origin,
+            };
+        } catch (error) {
+            this.logger.warn(`Ism API dan olinmadi (${name}): ${error.message}`);
+            return null;
         }
-
-        return [...new Set(syllables)]; // Remove duplicates
-    }
-
-    /**
-     * Optional: Enrich results with external API
-     */
-    private async enrichWithExternalAPI(results: GeneratedName[]): Promise<void> {
-        // Placeholder for external API integration
-        // Example: Behind The Name API, Namsor API, etc.
-
-        // For now, we'll use a mock implementation
-        // In production, you'd call a real API here:
-        /*
-        const response = await firstValueFrom(
-          this.httpService.get(`https://api.behindthename.com/lookup`, {
-            params: { name: results[0].name, key: 'YOUR_API_KEY' }
-          })
-        );
-        */
-
-        // Just a placeholder - no actual API call yet
-        return Promise.resolve();
-    }
-
-    /**
-     * Validate if a name exists in our database
-     */
-    async validateName(name: string): Promise<boolean> {
-        const normalized = name.trim();
-        return this.UZBEK_NAMES_GIRL.includes(normalized) ||
-            this.UZBEK_NAMES_BOY.includes(normalized);
-    }
-
-    /**
-     * Get meaning for a specific name
-     */
-    async getNameMeaning(name: string): Promise<{ meaning: string; origin: string } | null> {
-        return this.NAME_MEANINGS[name] || null;
     }
 }

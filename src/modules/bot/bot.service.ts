@@ -25,15 +25,6 @@ interface FlowState {
   payload: Record<string, unknown>;
 }
 
-const PERSONAL_FOCUS_TAGS: Array<{ key: string; label: string; tag: string }> = [
-  { key: 'ramziy', label: 'Ramziy', tag: 'ramziy' },
-  { key: 'rahbar', label: 'Rahbariy', tag: 'rahbar' },
-  { key: 'manaviy', label: "Ma'naviy", tag: "ma'naviy" },
-  { key: 'zamonaviy', label: 'Zamonaviy', tag: 'zamonaviy' },
-  { key: 'tabiat', label: 'Tabiat', tag: 'tabiat' },
-  { key: 'ilhom', label: 'Ilhom', tag: 'ilhom' },
-];
-
 @Injectable()
 export class BotService {
   // Foydalanuvchi oxirgi so'rovi uchun requested name
@@ -277,27 +268,6 @@ export class BotService {
           { parse_mode: 'HTML' },
         );
         await ctx.answerCallbackQuery();
-        break;
-      }
-      case 'focus': {
-        const key = parts[1];
-        if (key === 'done') {
-          await this.finalizePersonalization(ctx);
-          await ctx.answerCallbackQuery();
-        } else if (key === 'reset') {
-          ctx.session.flow = undefined;
-          await this.startPersonalizationFlow(ctx);
-          await ctx.answerCallbackQuery();
-        } else {
-          const current = (flow.payload.focusValues as string[] | undefined) ?? [];
-          if (current.includes(key)) {
-            flow.payload.focusValues = current.filter((tag) => tag !== key);
-          } else {
-            flow.payload.focusValues = [...current, key];
-          }
-          await this.promptFocusSelection(ctx);
-          await ctx.answerCallbackQuery();
-        }
         break;
       }
       default:
@@ -756,38 +726,12 @@ export class BotService {
           flow.payload.parentNames = message.split(',').map((part) => part.trim()).filter(Boolean);
         }
         flow.step = 5;
-        await this.promptFocusSelection(ctx);
+        await this.finalizePersonalization(ctx);
         return true;
       }
       default:
         return false;
     }
-  }
-
-  private async promptFocusSelection(ctx: BotContext): Promise<void> {
-    const flow = this.ensurePersonalizationSession(ctx);
-    const selected = (flow.payload.focusValues as string[] | undefined) ?? [];
-    const keyboard = new InlineKeyboard();
-    PERSONAL_FOCUS_TAGS.forEach((item, index) => {
-      const prefix = selected.includes(item.tag) ? '✅' : '▫️';
-      keyboard.text(`${prefix} ${item.label}`, `personal:focus:${item.tag}`);
-      if (index % 2 === 1) {
-        keyboard.row();
-      }
-    });
-    keyboard.row().text('✅ Tayyor', 'personal:focus:done');
-    keyboard.text('🔄 Qayta', 'personal:focus:reset');
-    keyboard.row().text('🏠 Menyu', 'main');
-
-    const selectedLine = selected.length
-      ? `Tanlangan qadriyatlar: ${selected.map((tag) => `#${tag}`).join(' ')}`
-      : 'Hozircha tanlov belgilanmagan.';
-
-    await this.safeEditOrReply(
-      ctx,
-      '✨ Qaysi qadriyatlar muhim? Bir nechtasini tanlang:\n\n' + selectedLine,
-      keyboard,
-    );
   }
 
   private async finalizePersonalization(ctx: BotContext): Promise<void> {
@@ -796,15 +740,21 @@ export class BotService {
       return;
     }
 
+    const answerIfCallback = async (text?: string): Promise<void> => {
+      if (ctx.callbackQuery) {
+        await ctx.answerCallbackQuery(text);
+      }
+    };
+
     const telegramId = ctx.from?.id;
     if (!telegramId) {
-      await ctx.answerCallbackQuery('Foydalanuvchi aniqlanmadi');
+      await answerIfCallback('Foydalanuvchi aniqlanmadi');
       return;
     }
 
     const user = await this.userRepository.findOne({ where: { telegramId } });
     if (!user) {
-      await ctx.answerCallbackQuery('/start yuboring');
+      await answerIfCallback('/start yuboring');
       return;
     }
 
@@ -882,7 +832,7 @@ export class BotService {
     );
 
     ctx.session.flow = undefined;
-    await ctx.answerCallbackQuery('Shaxsiy tavsiyalar tayyor!');
+    await answerIfCallback('Shaxsiy tavsiyalar tayyor!');
   }
 
   private async startQuiz(ctx: BotContext): Promise<void> {
