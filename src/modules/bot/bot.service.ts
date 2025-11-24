@@ -404,6 +404,8 @@ export class BotService {
       .row()
       .text('📈 Trendlar', 'menu:trends')
       .row()
+      .url('📜 Oferta', 'https://telegra.ph/Ismlar-manosi-11-24')
+      .row()
       .switchInline('🔍 Inline qidiruv', '');
 
     if (!hasAccess) {
