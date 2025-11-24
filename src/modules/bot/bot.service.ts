@@ -127,8 +127,6 @@ export class BotService {
 
     if (!hasAccess) {
       keyboard.text('💳 Premium Obuna');
-      keyboard.row();
-      keyboard.text('📜 Oferta');
     }
 
     keyboard.resized();
@@ -586,6 +584,8 @@ export class BotService {
       .url('💳 Payme', paymeLink)
       .url('💳 Click', clickLink)
       .row()
+      .url('📜 Oferta', 'https://telegra.ph/Ismlar-manosi-11-24')
+      .row()
       .text('🏠 Menyu', 'main');
 
     const normalizedName = options?.requestedName?.trim();
@@ -1042,6 +1042,8 @@ export class BotService {
     const keyboard = new InlineKeyboard()
       .url('💳 Payme', paymeLink)
       .url('💳 Click', clickLink)
+      .row()
+      .url('📜 Oferta', 'https://telegra.ph/Ismlar-manosi-11-24')
       .row()
       .text('🏠 Menyu', 'main');
 
