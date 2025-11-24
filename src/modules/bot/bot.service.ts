@@ -559,7 +559,6 @@ export class BotService {
 
     const amount = 77777;
     const formattedAmount = '77 777';
-    const formattedAmount = '77 777';
     const formattedAmount = "77 777 so'm";
 
     // Generate secure payment links with tokens
@@ -1064,6 +1063,7 @@ export class BotService {
     }
 
     const amount = 77777;
+    const formattedAmount = '77 777';
     const providerTitle = provider === 'click' ? 'Click' : 'Payme';
 
     let paymentLink: string;
