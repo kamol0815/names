@@ -237,6 +237,15 @@ export class BotService {
         await this.showTrendMenu(ctx);
         await ctx.answerCallbackQuery();
         break;
+      case 'oferta':
+        if (ctx.from?.id) {
+          await this.activityTracker.trackActivity(ctx.from.id, ActivityType.OFERTA_CLICK);
+        }
+        await ctx.answerCallbackQuery('📜 Oferta');
+        await ctx.reply('<a href="https://telegra.ph/Ismlar-manosi-11-24">📜 Oferta (ommaviy oferta)</a>', {
+          parse_mode: 'HTML',
+        });
+        break;
       default:
         await this.showMainMenu(ctx);
         await ctx.answerCallbackQuery();
@@ -366,6 +375,9 @@ export class BotService {
         await this.showOnetimePayment(ctx);
         return;
       case '📜 Oferta':
+        if (ctx.from?.id) {
+          await this.activityTracker.trackActivity(ctx.from.id, ActivityType.OFERTA_CLICK);
+        }
         await ctx.reply('<a href="https://telegra.ph/Ismlar-manosi-11-24">📜 Oferta (ommaviy oferta)</a>', { parse_mode: 'HTML' });
         return;
     }
@@ -413,7 +425,7 @@ export class BotService {
       .row()
       .text('📈 Trendlar', 'menu:trends')
       .row()
-      .url('📜 Oferta', 'https://telegra.ph/Ismlar-manosi-11-24')
+      .text('📜 Oferta', 'menu:oferta')
       .row()
       .switchInline('🔍 Inline qidiruv', '');
 
@@ -581,10 +593,10 @@ export class BotService {
     });
 
     const keyboard = new InlineKeyboard()
-      .url('💳 Payme', paymeLink)
-      .url('💳 Click', clickLink)
+      .text('💳 Payme', 'onetime|payme')
+      .text('💳 Click', 'onetime|click')
       .row()
-      .url('📜 Oferta', 'https://telegra.ph/Ismlar-manosi-11-24')
+      .text('📜 Oferta', 'menu:oferta')
       .row()
       .text('🏠 Menyu', 'main');
 
@@ -1029,21 +1041,11 @@ export class BotService {
     const amount = 77777;
     const formattedAmount = amount.toLocaleString('ru-RU');
 
-    const paymeLink = generatePaymeLink({
-      amount,
-      planId: plan.id,
-      userId: user.id,
-    });
-
-    const clickLink = generateClickOnetimeLink(user.id, plan.id, amount, {
-      planCode: plan.selectedName ?? plan.name ?? plan.id,
-    });
-
     const keyboard = new InlineKeyboard()
-      .url('💳 Payme', paymeLink)
-      .url('💳 Click', clickLink)
+      .text('💳 Payme', 'onetime|payme')
+      .text('💳 Click', 'onetime|click')
       .row()
-      .url('📜 Oferta', 'https://telegra.ph/Ismlar-manosi-11-24')
+      .text('📜 Oferta', 'menu:oferta')
       .row()
       .text('🏠 Menyu', 'main');
 

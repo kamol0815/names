@@ -185,8 +185,9 @@ export class ActivityTrackerService {
         const inlineTypes = [
             ActivityType.NAME_MEANING_CLICK,
             ActivityType.PERSONAL_TAVSIYA_CLICK,
-            ActivityType.TRENDS_CLICK,
-            ActivityType.FAVORITES_CLICK,
+            ActivityType.OFERTA_CLICK,
+            ActivityType.PAYME_CLICKED,
+            ActivityType.CLICK_CLICKED,
         ];
 
         const stats: Record<string, number> = {};
@@ -208,9 +209,11 @@ export class ActivityTrackerService {
         const stats: Array<{
             date: string;
             startCommands: number;
-            nameSearches: number;
-            paymentAttempts: number;
-            successfulPayments: number;
+            nameMeaningClicks: number;
+            personalTavsiyaClicks: number;
+            ofertaClicks: number;
+            paymeClicks: number;
+            clickClicks: number;
         }> = [];
 
         for (let i = days - 1; i >= 0; i--) {
@@ -221,7 +224,14 @@ export class ActivityTrackerService {
             const nextDay = new Date(date);
             nextDay.setDate(nextDay.getDate() + 1);
 
-            const [startCommands, nameSearches, paymentAttempts, successfulPayments] = await Promise.all([
+            const [
+                startCommands,
+                nameMeaningClicks,
+                personalTavsiyaClicks,
+                ofertaClicks,
+                paymeClicks,
+                clickClicks,
+            ] = await Promise.all([
                 this.activityRepository.count({
                     where: {
                         activityType: ActivityType.START_COMMAND,
@@ -230,19 +240,31 @@ export class ActivityTrackerService {
                 }),
                 this.activityRepository.count({
                     where: {
-                        activityType: ActivityType.NAME_SEARCHED,
+                        activityType: ActivityType.NAME_MEANING_CLICK,
                         createdAt: Between(date, nextDay),
                     },
                 }),
                 this.activityRepository.count({
                     where: {
-                        activityType: ActivityType.PAYMENT_SCREEN_OPENED,
+                        activityType: ActivityType.PERSONAL_TAVSIYA_CLICK,
                         createdAt: Between(date, nextDay),
                     },
                 }),
                 this.activityRepository.count({
                     where: {
-                        activityType: ActivityType.PAYMENT_SUCCESS,
+                        activityType: ActivityType.OFERTA_CLICK,
+                        createdAt: Between(date, nextDay),
+                    },
+                }),
+                this.activityRepository.count({
+                    where: {
+                        activityType: ActivityType.PAYME_CLICKED,
+                        createdAt: Between(date, nextDay),
+                    },
+                }),
+                this.activityRepository.count({
+                    where: {
+                        activityType: ActivityType.CLICK_CLICKED,
                         createdAt: Between(date, nextDay),
                     },
                 }),
@@ -251,9 +273,11 @@ export class ActivityTrackerService {
             stats.push({
                 date: date.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit' }),
                 startCommands,
-                nameSearches,
-                paymentAttempts,
-                successfulPayments,
+                nameMeaningClicks,
+                personalTavsiyaClicks,
+                ofertaClicks,
+                paymeClicks,
+                clickClicks,
             });
         }
 

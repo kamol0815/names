@@ -354,35 +354,21 @@ export class AdminService {
             // Get inline keyboard stats
             const inlineStats = await this.activityTracker.getInlineKeyboardStats(today, tomorrow);
 
-            // Get payment funnel
-            const paymentFunnel = await this.activityTracker.getPaymentFunnel(today, tomorrow);
-
             // Count activities
             const startCommands = await this.activityRepository.count({
                 where: { activityType: ActivityType.START_COMMAND, createdAt: MoreThan(today) },
             });
 
-            const nameSearches = await this.activityRepository.count({
-                where: { activityType: ActivityType.NAME_SEARCHED, createdAt: MoreThan(today) },
-            });
-
             const message =
                 '🎯 <b>FAOLLIK STATISTIKASI (Bugun)</b>\n\n' +
-                '<b>� Bot Komandalar:</b>\n' +
+                '<b>🤖 Bot komandalar:</b>\n' +
                 `├ /start: <b>${startCommands}</b>\n` +
-                `└ Ism qidiruvlar: <b>${nameSearches}</b>\n\n` +
-                '<b>⌨️ Inline Keyboard Bosishlar:</b>\n' +
+                '<b>⌨️ Tugma bosishlar:</b>\n' +
                 `├ 🔍 Ism Ma'nosi: <b>${inlineStats[ActivityType.NAME_MEANING_CLICK] || 0}</b>\n` +
                 `├ 🎯 Shaxsiy Tavsiya: <b>${inlineStats[ActivityType.PERSONAL_TAVSIYA_CLICK] || 0}</b>\n` +
-                `├ 📊 Trendlar: <b>${inlineStats[ActivityType.TRENDS_CLICK] || 0}</b>\n` +
-                `└ ⭐ Sevimlilar: <b>${inlineStats[ActivityType.FAVORITES_CLICK] || 0}</b>\n\n` +
-                '<b>💳 To\'lov Harakatlari:</b>\n' +
-                `├ To'lov ekrani ochildi: <b>${paymentFunnel.paymentScreens}</b>\n` +
-                `├ Payme bosildi: <b>${paymentFunnel.paymeClicks}</b>\n` +
-                `├ Click bosildi: <b>${paymentFunnel.clickClicks}</b>\n` +
-                `├ ✅ Muvaffaqiyatli: <b>${paymentFunnel.successPayments}</b>\n` +
-                `└ ❌ Bekor qilindi: <b>${paymentFunnel.failedPayments}</b>\n\n` +
-                `💡 Konversiya: <b>${paymentFunnel.conversionRate}</b>`;
+                `├ 📜 Oferta: <b>${inlineStats[ActivityType.OFERTA_CLICK] || 0}</b>\n` +
+                `├ 💳 Payme: <b>${inlineStats[ActivityType.PAYME_CLICKED] || 0}</b>\n` +
+                `└ 🟢 Click: <b>${inlineStats[ActivityType.CLICK_CLICKED] || 0}</b>`;
 
             await ctx.reply(message, { parse_mode: 'HTML' });
         } catch (error) {
@@ -463,9 +449,11 @@ export class AdminService {
             dailyStats.forEach(day => {
                 message += `📆 <b>${day.date}</b>\n`;
                 message += `├ /start: ${day.startCommands}\n`;
-                message += `├ Qidiruvlar: ${day.nameSearches}\n`;
-                message += `├ To'lov urinishlari: ${day.paymentAttempts}\n`;
-                message += `└ ✅ To'lovlar: ${day.successfulPayments}\n\n`;
+                message += `├ 🔍 Ism Ma'nosi: ${day.nameMeaningClicks}\n`;
+                message += `├ 🎯 Shaxsiy Tavsiya: ${day.personalTavsiyaClicks}\n`;
+                message += `├ 📜 Oferta: ${day.ofertaClicks}\n`;
+                message += `├ 💳 Payme: ${day.paymeClicks}\n`;
+                message += `└ 🟢 Click: ${day.clickClicks}\n\n`;
             });
 
             await ctx.reply(message, { parse_mode: 'HTML' });

@@ -18,6 +18,7 @@ export enum ActivityType {
     INLINE_SEARCH = 'inline_search',
     NAME_MEANING_CLICK = 'name_meaning_click',
     PERSONAL_TAVSIYA_CLICK = 'personal_tavsiya_click',
+    OFERTA_CLICK = 'oferta_click',
     TRENDS_CLICK = 'trends_click',
     FAVORITES_CLICK = 'favorites_click',
 
