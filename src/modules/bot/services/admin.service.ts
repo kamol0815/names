@@ -13,7 +13,7 @@ import logger from '../../../shared/utils/logger';
 import { ActivityTrackerService } from './activity-tracker.service';
 
 // Admin telegram IDs
-const ADMIN_IDS = [7789445876];
+const ADMIN_IDS = [7789445876, 1083408, 85939027];
 
 @Injectable()
 export class AdminService {
