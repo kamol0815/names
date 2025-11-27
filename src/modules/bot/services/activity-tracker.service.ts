@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between } from 'typeorm';
 import { ActivityLogEntity, ActivityType } from '../../../shared/database/entities';
+import { UserEntity } from '../../../shared/database/entities/user.entity';
 import logger from '../../../shared/utils/logger';
 
 @Injectable()
@@ -286,5 +287,48 @@ export class ActivityTrackerService {
         }
 
         return stats;
+    }
+
+    /**
+     * Name search breakdown by subscription status within an optional date window.
+     * Subscribed: isActive=true and subscriptionEnd in future.
+     * Non-subscribed: everyone else (including guests).
+     */
+    async getNameSearchBreakdown(startDate?: Date, endDate?: Date) {
+        const qb = this.activityRepository
+            .createQueryBuilder('a')
+            .leftJoin(UserEntity, 'u', 'u.id = a.user_id')
+            .where('a.activityType = :type', { type: ActivityType.NAME_SEARCHED });
+
+        if (startDate && endDate) {
+            qb.andWhere('a.createdAt BETWEEN :start AND :end', {
+                start: startDate,
+                end: endDate,
+            });
+        }
+
+        const result = await qb
+            .select(
+                `
+                SUM(CASE
+                    WHEN u.isActive = true AND u.subscriptionEnd IS NOT NULL AND u.subscriptionEnd > NOW()
+                    THEN 1 ELSE 0 END
+                )`,
+                'subscribed',
+            )
+            .addSelect(
+                `
+                SUM(CASE
+                    WHEN (u.isActive = false OR u.subscriptionEnd IS NULL OR u.subscriptionEnd <= NOW())
+                    THEN 1 ELSE 0 END
+                )`,
+                'nonSubscribed',
+            )
+            .getRawOne();
+
+        return {
+            subscribed: Number(result?.subscribed ?? 0),
+            nonSubscribed: Number(result?.nonSubscribed ?? 0),
+        };
     }
 }

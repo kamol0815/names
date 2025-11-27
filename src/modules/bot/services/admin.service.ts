@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan, Between } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import { Context } from 'grammy';
 import {
     UserEntity,
@@ -445,12 +445,17 @@ export class AdminService {
             let message = '📅 <b>KUNLIK STATISTIKA (7 kun)</b>\n\n';
 
             for (const day of dailyStats) {
-                const dailyPayments = await this.transactionRepository.count({
-                    where: {
-                        status: TransactionStatus.PAID,
-                        performTime: Between(day.startDate, day.endDate),
-                    },
-                });
+                const [dailyPayments, nameSearchBreakdown] = await Promise.all([
+                    this.transactionRepository
+                        .createQueryBuilder('t')
+                        .where('t.status = :status', { status: TransactionStatus.PAID })
+                        .andWhere(
+                            '(t.performTime BETWEEN :start AND :end OR t.createdAt BETWEEN :start AND :end)',
+                            { start: day.startDate, end: day.endDate },
+                        )
+                        .getCount(),
+                    this.activityTracker.getNameSearchBreakdown(day.startDate, day.endDate),
+                ]);
 
                 message += `📆 <b>${day.dateLabel}</b>\n`;
                 message += `├ /start tugmasini bosganlar: ${day.startCommands}\n`;
@@ -459,9 +464,9 @@ export class AdminService {
                 message += `├ 📜 Oferta tugmasini bosganlar: ${day.ofertaClicks}\n`;
                 message += `├ 💳 Payme tugmasini bosganlar: ${day.paymeClicks}\n`;
                 message += `└ 🟢 Click tugmasini bosganlar: ${day.clickClicks}\n`;
-                message += dailyPayments > 0
-                    ? `   💰 To'lovlar: ${dailyPayments}\n\n`
-                    : `   💰 To'lov qilinmagan\n\n`;
+                message += `   🔍 Ism qidirganlar (obunali): ${nameSearchBreakdown.subscribed}\n`;
+                message += `   🔍 Ism qidirganlar (obunasiz): ${nameSearchBreakdown.nonSubscribed}\n`;
+                message += `   💰 To'lovlar: ${dailyPayments} ta\n\n`;
             }
 
             await ctx.reply(message, { parse_mode: 'HTML' });
