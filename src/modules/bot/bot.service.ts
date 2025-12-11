@@ -618,10 +618,11 @@ export class BotService {
       ? `🔒 <b>${displayName}</b> ismini ma'nosini bilish uchun premium sotib oling.\n\n`
       : "🔒 Ushbu bo'limdan foydalanish uchun premium talab qilinadi.\n\n";
 
+    const displayAmount = '9 999';
     const message =
       introMessage +
-      `🌟 <b>Premium:</b> ${formattedAmount} so'm bir marta to'lov qilasiz \n` +
-      "♾️ <b>Muddati:</b> 1 yil muddatga obuna bo'lasiz\n\n" +
+      `🌟 <b>Premium:</b> ${displayAmount} so'm bir marta to'lov qilasiz \n` +
+      `♾️ <b>Muddati:</b> 1 yil muddatga atigi ${displayAmount} so'm\n\n` +
       "Quyidagi to'lov usulini tanlang:";
 
     await ctx.reply(message, { reply_markup: keyboard, parse_mode: 'HTML' });
@@ -1060,8 +1061,9 @@ export class BotService {
       .row()
       .text('🏠 Menyu', 'main');
 
+    const displayAmount = '9999';
     await ctx.reply(
-      `🌟 Premium: ${formattedAmount} so'm\n♾️ Muddati: 1 yil\n\nQuyidagi to'lov usulini tanlang:`,
+      `Muddati: 1 yil muddatga atigi ${displayAmount} so'm\n\nQuyidagi to'lov usulini tanlang:`,
       { reply_markup: keyboard },
     );
   }
@@ -1111,9 +1113,10 @@ export class BotService {
       .row()
       .text('🏠 Menyu', 'main');
 
+    const displayAmount = '9 999';
     await this.safeEditOrReply(
       ctx,
-      `💳 <b>${providerTitle}</b> orqali to'lov\n\nSumma: ${formattedAmount} so'm\n♾️ Muddati: 1 yil\n\nQuyidagi havola orqali to'lovni tasdiqlang.`,
+      `💳 <b>${providerTitle}</b> orqali to'lov\n\nSumma: ${displayAmount} so'm\n♾️ Muddati: 1 yil muddatga atigi ${displayAmount} so'm\n\nQuyidagi havola orqali to'lovni tasdiqlang.`,
       keyboard,
     );
     await ctx.answerCallbackQuery();
